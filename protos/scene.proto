@@ -1,3 +1,4 @@
+<<<<<<< 68df443d39bfed30cb9f48a010c78c56448ce646
 
 message GM_Request
 {
@@ -75,3 +76,82 @@ message GM_Position_BC
 	optional GMPoint3D direction = 3;
 }
 
+=======
+
+message GM_Request
+{
+	required int64 id = 1;
+}
+
+message GMPlayerData
+{
+	required int32 roleId = 1;
+	optional string name = 2;
+	required GMPoint3D position = 3;
+	required GMPoint3D direction = 4;
+}
+
+message GM_Connect
+{
+	required int32 roleId = 1;
+    required int32 clientId = 2;
+	required int32 type =3; //1连接 2,断开
+}
+
+message GM_Ready
+{
+	required int32 roleId  = 1;
+	required GMPoint3D position = 2;
+	required GMPoint3D direction = 3;
+}
+
+message GMFrameData
+{
+	required int64 id = 1;
+	required int32 type = 2;
+	required bytes data = 3; //帧数据
+	required int64 frame = 4; //所在帧
+	required int64 frametime = 5; //所在帧的时间
+}
+
+message GM_Frame
+{
+	required int32 roleId =1;
+	required int64 frame = 2;//客户端当前帧
+	repeated GMFrameData frameData = 4;
+}
+
+message GM_Frame_BC
+{
+	required int64 frame = 1; //服务器当前帧
+	repeated GMFrameData frameData = 2;
+}
+
+
+message GM_Begin
+{
+	required int32 result = 1;
+	
+	repeated GMPlayerData playerData = 2;
+}
+
+message GMPoint2D
+{
+	optional int32 x = 1;
+	optional int32 y = 2;
+}
+message GMPoint3D
+{
+	optional int32 x = 1;
+	optional int32 y = 2;
+	optional int32 z = 3;
+}
+
+message GM_Position_BC
+{
+	required int32 roleId = 1;
+	optional GMPoint3D position = 2;
+	optional GMPoint3D direction = 3;
+}
+
+>>>>>>> First commit

@@ -1,3 +1,4 @@
+<<<<<<< 68df443d39bfed30cb9f48a010c78c56448ce646
 import "scene.proto";
 
 
@@ -27,3 +28,34 @@ enum GMActionType
 		required int32 roleId = 1;
 		required GMPoint3D position = 2;
 	}
+=======
+import "scene.proto";
+
+
+enum GMActionType
+{
+	MOVE = 1;
+	RELEASE_SKILL = 2;
+	MOVE_TO_POINT = 3;
+}
+	
+	message GMAction_ReleaseSkill
+	{
+		required int32 roleId= 1;
+		required int32 skillId = 2;
+		required GMPoint3D mouseposition = 3;
+	}
+
+	message GMAction_Move
+	{
+		required int32 roleId = 1;
+		required bool  draging = 2;
+		required GMPoint3D direction = 3;
+	}
+	
+	message GMAction_MoveToPoint
+	{
+		required int32 roleId = 1;
+		required GMPoint3D position = 2;
+	}
+>>>>>>> First commit
