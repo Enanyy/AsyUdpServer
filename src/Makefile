@@ -31,7 +31,7 @@ $(TARGET):$(wildcard $(OBJ_DIR)*.o)
 ECHO:
 	@echo $(SUB_DIR)
 
-$(OBJ_LIST):%.o:%.o
+$(OBJ_LIST):%.o:%.cpp
 	$(CXX) $(CFLAGS) -o $@ $^
 
 
