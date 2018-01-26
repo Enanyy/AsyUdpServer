@@ -18,21 +18,21 @@ TARGET  = $(ROOT_DIR)/bin/debug
 export CXX CC CFLAGS PROTOFLAGS
 
 SRC_LIST = $(wildcard *.cpp)
-OBJ_LIST = $(patsubst *.cpp, *.o, $(SRC_LIST))
+OBJ_LIST = $(patsubst %.cpp, %.o, $(SRC_LIST))
 
 all:$(SUB_DIR) $(OBJ_LIST) $(TARGET)
 
 $(SUB_DIR):ECHO
 	make -C $@
 
-$(TARGET):$(wildcard $(OBJ_DIR)*.o)
+$(TARGET):$(wildcard $(OBJ_DIR)/*.o)
 	$(CXX) $^ $(LFLAGS) $(PROTOFLAGS) -o $@
 
 ECHO:
 	@echo $(SUB_DIR)
 
 $(OBJ_LIST):%.o:%.cpp
-	$(CXX) $(CFLAGS) -o $@ $^
+	$(CXX) $(CFLAGS) $^ -o $(OBJ_DIR)/$@
 
 
 clean:
