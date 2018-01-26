@@ -13,7 +13,7 @@ PROTOFLAGS 	:= -I $(PROTO_CPP_DIR) -L $(PROTO_LIB_DIR) -lprotoc -lprotobuf
 SUB_DIR = $(shell ls -l | grep ^d | awk '{if($$9 != "bin") print $$9}')
 
 OBJ_DIR = $(ROOT_DIR)/bin/debug/obj
-TARGET  = $(ROOT_DIR)/bin/debug
+TARGET  = $(ROOT_DIR)/bin/debug/server
 
 export CXX CC CFLAGS PROTOFLAGS
 
@@ -26,7 +26,7 @@ $(SUB_DIR):ECHO
 	make -C $@
 
 $(TARGET):$(wildcard $(OBJ_DIR)/*.o)
-	$(CXX) $^ $(LFLAGS) $(PROTOFLAGS) -o $@
+	$(CXX) $(LFLAGS) $(PROTOFLAGS) $^ -o $@
 
 ECHO:
 	@echo $(SUB_DIR)
