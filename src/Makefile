@@ -34,6 +34,8 @@ ECHO:
 $(OBJ_LIST):%.o:%.cpp
 	$(CXX) $(CFLAGS) $^ -o $(OBJ_DIR)/$@
 
+run:
+	$(TARGET)
 
 clean:
 	@rm -f $(wildcard $(OBJ_DIR)/*.o)
