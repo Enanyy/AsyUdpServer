@@ -13,7 +13,7 @@ PROTOFLAGS := -I $(PROTO_CPP_PATH) -L $(PROTO_LIB_PATH) -lprotoc -lprotobuf
 VPATH = $(PROTO_CPP_PATH)\
 
 
-INCLUDES = $(PROTO_CPP_PATH)Makefile.mk\
+#INCLUDES = $(PROTO_CPP_PATH)Makefile.mk\
 		   
 
 include $(INCLUDES)	
