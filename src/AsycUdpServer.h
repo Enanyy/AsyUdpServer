@@ -14,7 +14,7 @@
 #include "common/SafeQueue.h"
 #include "common/SafeVector.h"
 #include "network/EndPoint.h"
-#include "network/EpollPoller.h"
+#include "network/EventEpoller.h"
 #include "public.h"
 #include "common/ThreadPool.h"
 
@@ -67,7 +67,7 @@ class AsycUdpServer: public EventListener
     private:
 
         bool                        mAvaible;
-        EpollPoller                 mTcpServer;
+        EventEpoller                mTcpServer;
         EndPoint                    mUdpServer;
 
         SafeVector<Client*>         mClientList;

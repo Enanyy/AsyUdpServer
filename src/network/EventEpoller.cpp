@@ -1,23 +1,23 @@
-#include "EpollPoller.h"
+#include "EventEpoller.h"
 
-EpollPoller::EpollPoller():mFD(epoll_create(256))
+EventEpoller::EventEpoller():mFD(epoll_create(256))
 {
     
 }
 
 
-EpollPoller::~EpollPoller()
+EventEpoller::~EventEpoller()
 {
     close();
 }
 
-void EpollPoller::close()
+void EventEpoller::close()
 {
     ::close(mFD);
-    EventPoller::close();
+    IOEvent::close();
 }
 
-bool EpollPoller::registerEndPoint(int fd, EndPoint* endpoint)
+bool EventEpoller::registerEndPoint(int fd, EndPoint* endpoint)
 {
     if(endpoint == NULL)
     {
@@ -37,11 +37,11 @@ bool EpollPoller::registerEndPoint(int fd, EndPoint* endpoint)
         return false;
     }
 
-    return EventPoller:: registerEndPoint(fd, endpoint);
+    return EventEpoller:: registerEndPoint(fd, endpoint);
 
 }
 
-bool EpollPoller::unRegisterEndPoint(int fd, EndPoint* endpoint)
+bool EventEpoller::unRegisterEndPoint(int fd, EndPoint* endpoint)
 {
     struct epoll_event ev;
 
@@ -50,10 +50,10 @@ bool EpollPoller::unRegisterEndPoint(int fd, EndPoint* endpoint)
 
     epoll_ctl(mFD, EPOLL_CTL_DEL, fd, &ev);
 
-    return EventPoller:: unRegisterEndPoint(fd, endpoint);
+    return EventEpoller:: unRegisterEndPoint(fd, endpoint);
 }
 
-void EpollPoller::update()
+void EventEpoller::update()
 {
     struct epoll_event events[mBackLog];
     struct epoll_event ev;

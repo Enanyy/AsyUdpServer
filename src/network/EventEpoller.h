@@ -1,15 +1,15 @@
-#ifndef _EPOLL_POLLER_H_
-#define _EPOLL_POLLER_H_
+#ifndef _EVENT_EPOLLER_H_
+#define _EVENT_EPOLLER_H_
 
-#include "EventPoller.h"
+#include "IOEvent.h"
 
 #include <sys/epoll.h>
 
-class EpollPoller : public EventPoller
+class EventEpoller : public IOEvent
 {
     public:
-        EpollPoller();
-        ~EpollPoller();
+        EventEpoller();
+        ~EventEpoller();
 
         virtual void close();
         
