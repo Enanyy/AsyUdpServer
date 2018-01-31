@@ -1,13 +1,13 @@
 SUB_DIR 	= $(shell ls -l | grep ^d | awk '{print $$9}')
-SRC_LIST 	= $(wildcard *.cc)
-OBJ_LIST 	= $(patsubst %.cc, %.o, $(SRC_LIST))
+CC_LIST 	= $(wildcard *.cc)
+CC_OBJ_LIST 	= $(patsubst %.cc, %.o, $(CC_LIST))
 
-all:$(SUB_DIR) $(OBJ_LIST)
+all:$(SUB_DIR) $(CC_OBJ_LIST)
 
 $(SUB_DIR):ECHO
 	make -C $@
 
-$(OBJ_LIST):%.o:%.cc
+$(CC_OBJ_LIST):%.o:%.cc
 	$(CXX) $(CFLAGS) $(PROTOFLAGS) $^ -o $(OBJ_DIR)/$@
 
 ECHO:

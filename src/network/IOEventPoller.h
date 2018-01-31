@@ -5,11 +5,11 @@
 
 #include <sys/epoll.h>
 
-class EventEpoller : public IOEvent
+class IOEventPoller : public IOEvent
 {
     public:
-        EventEpoller();
-        ~EventEpoller();
+        IOEventPoller();
+        ~IOEventPoller();
 
         virtual void close();
         

@@ -14,14 +14,14 @@
 #include "common/SafeQueue.h"
 #include "common/SafeVector.h"
 #include "network/EndPoint.h"
-#include "network/EventEpoller.h"
 #include "public.h"
 #include "common/ThreadPool.h"
+#include "network/IOEventPoller.h"
 
 class Client;
 class MessageInfo;
 
-class AsycUdpServer: public EventListener
+class AsycUdpServer: public IOEventListener
 {
     public:
         AsycUdpServer();
@@ -67,7 +67,7 @@ class AsycUdpServer: public EventListener
     private:
 
         bool                        mAvaible;
-        EventEpoller                mTcpServer;
+        IOEventPoller               mTcpServer;
         EndPoint                    mUdpServer;
 
         SafeVector<Client*>         mClientList;

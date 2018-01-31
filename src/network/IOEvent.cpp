@@ -11,7 +11,7 @@ IOEvent::~IOEvent()
 }
 
 
-bool IOEvent::start(EventListener* listener, const int backlog, const char* ip, const unsigned int port)
+bool IOEvent::start(IOEventListener* listener, const int backlog, const char* ip, const unsigned int port)
 {
     mListener   = listener;
     mBackLog    = backlog;

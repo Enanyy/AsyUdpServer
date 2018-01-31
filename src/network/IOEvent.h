@@ -5,13 +5,13 @@
 #include <unordered_map>
 
 
-class EventListener
+class IOEventListener
 {
     friend class IOEvent;
 
     public:
-        EventListener(){}
-        virtual ~EventListener() {}
+        IOEventListener(){}
+        virtual ~IOEventListener() {}
 
     private:
         virtual void    onConnect(EndPoint* endpoint) = 0;
@@ -31,7 +31,7 @@ class IOEvent
         IOEvent();
         virtual ~IOEvent();
 
-        virtual bool start(EventListener* listener, const int backlog, const char* ip, const unsigned int port);
+        virtual bool start(IOEventListener* listener, const int backlog, const char* ip, const unsigned int port);
        
         virtual void update() = 0;
         virtual void close();
@@ -55,7 +55,7 @@ class IOEvent
 
         EndPoints           mEndPoints;
 
-        EventListener*      mListener;
+        IOEventListener*    mListener;
 
         int                 mBackLog;
 
