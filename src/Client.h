@@ -18,10 +18,8 @@ class Client
 
         EndPoint* getEndPoint(){return mEndPoint;}
 
-        void sendTcp(Packet* packet);
-        void sendUdp(Packet* packet);
-
-        int sendTcp();
+        void send(Packet* packet);
+        void sendto(Packet* packet);
 
         void onConnect();
         void onDisconnect();
@@ -31,7 +29,6 @@ class Client
         
         EndPoint* mEndPoint;
         AsycUdpServer * mServer;
-        std::queue<Packet*> mSendTcpQueue;
 };
 
 

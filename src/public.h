@@ -19,20 +19,20 @@
 		(p) = NULL;\
 	}\
 
-#define SEND_TCP(messageId, send, user)\
+#define SEND_TCP(messageId, proto, user)\
 		std::string buffer;\
-		send.SerializeToString(&buffer);\
+		proto.SerializeToString(&buffer);\
 		if(user)\
 		{\
-			user->sendTcp(MessageID::messageId, buffer.c_str(), strlen(buffer.c_str()));\
+			user->send(MessageID::messageId, buffer.c_str(), strlen(buffer.c_str()));\
 		}\
 
-#define SEND_UDP(messageId, send, user)\
+#define SEND_UDP(messageId, proto, user)\
         std::string buffer;\
-        send.SerializeToString(&buffer);\
+        proto.SerializeToString(&buffer);\
         if(user)\
         {\
-            user->sendUdp(MessageID::messageId,buffer.c_str(), strlen(buffer.c_str()));\
+            user->sendto(MessageID::messageId,buffer.c_str(), strlen(buffer.c_str()));\
         }\
 
 #define RECV_MSG(name, message, data)\

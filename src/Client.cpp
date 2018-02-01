@@ -24,49 +24,18 @@ void Client::onDisconnect()
 
 }
 
-void Client::sendTcp(Packet* packet)
+void Client::send(Packet* packet)
 {
-    if(packet!=NULL)
+    if(packet!=NULL && mServer != NULL)
     {
-        printf("Client::sendTcp client %d cache tcp packet id = %d.\n", mEndPoint->getFD(), packet->getPacketID());
-        mSendTcpQueue.push(packet);
+        mServer->send(mEndPoint, packet);
     }
 }
 
-int Client::sendTcp()
-{
-    printf("Client::sendTcp sendQueue.size = %d.\n",mSendTcpQueue.size());
-    
-    int size = 0;
-
-    while(mSendTcpQueue.size() > 0 )
-    {
-        Packet* packet = mSendTcpQueue.front();
-
-        if(packet!=NULL && mEndPoint!=NULL && mEndPoint->isValid())
-        {
-            
-            int result =mEndPoint->send(packet->data(),packet->length());
-            if(result < 0)
-            {
-                return result;
-            }
-
-            size += result;
-
-            printf("Client::sendTcp send tcp id=%d length=%d.\n",packet->getPacketID(), packet->length());
-        }
-
-        mSendTcpQueue.pop();
-        SAFE_DELETE(packet);
-    }
-    return size;
-}
-
-void Client::sendUdp(Packet* packet)
+void Client::sendto(Packet* packet)
 {
     if(mServer)
     {
-        mServer->sendUdp(new MessageInfo(packet,this));
+        mServer->sendto(new MessageInfo(packet,this));
     }
 }

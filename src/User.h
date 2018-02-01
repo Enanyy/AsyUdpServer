@@ -14,11 +14,11 @@ class User
         void Ready(){mReady = true;}
         bool isReady(){return mReady;}
 
-        void sendUdp(Packet* packet);
-        void sendTcp(Packet* packet);
+        void send(Packet* packet);
+        void sendto(Packet* packet);
 
-        void sendTcp(MessageID messageId, const char* data, const size_t length);
-        void sendUdp(MessageID messageId, const char* data, const size_t length);
+        void send(MessageID messageId, const char* data, const size_t length);
+        void sendto(MessageID messageId, const char* data, const size_t length);
 
         int getClientID();
         int getUserID(){return mUserID;}

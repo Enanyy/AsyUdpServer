@@ -1,6 +1,15 @@
 #include "IOEvent.h"
 
-IOEvent:: IOEvent():mServer(),mListener(NULL),mBackLog(10)
+void IOEventListener::send(EndPoint* endpoint, Packet* packet)
+{
+    if(mIOEvent)
+    {
+        mIOEvent->send(endpoint, packet);    
+    }
+}
+
+
+IOEvent:: IOEvent():mServer(),mListener(NULL),mEndPoints() ,mBackLog(10), mPackets()
 {
 
 }
@@ -15,6 +24,11 @@ bool IOEvent::start(IOEventListener* listener, const int backlog, const char* ip
 {
     mListener   = listener;
     mBackLog    = backlog;
+
+    if(mListener)
+    {
+        mListener->init(this);
+    }
 
     int fd      = mServer.socket(SOCKET_TYPE::TCP);
     if(fd < 0)
@@ -90,6 +104,22 @@ bool IOEvent::unRegisterEndPoint(int fd, EndPoint* endpoint)
     return false;
 }
 
+void IOEvent::send(EndPoint*  endpoint, Packet* packet)
+{
+    if(endpoint == NULL || packet == NULL) return;
+
+    int fd = endpoint->getFD();
+
+    auto it = mPackets.find(fd);
+
+    if(it == mPackets.end())
+    {
+        std::queue<Packet* > packets;
+        mPackets[fd] = packets;
+    }
+
+    mPackets[fd].push(packet);
+}
 
 EndPoint* IOEvent::getEndPoint(const int fd)
 {
@@ -123,12 +153,28 @@ void IOEvent::onRecv(const int fd)
     EndPoint* endpoint = getEndPoint(fd);
     if(endpoint != NULL)
     {
-        if(mListener!= NULL)
+        Packet* packet = new Packet();
+        printf("IOEvent::onRecv %d Begin recv.\n", endpoint->getFD());
+        int result = packet->recv(endpoint);
+        printf("IOEvent::onRecv %d End recv.\n", endpoint->getFD());
+        if(result >= Packet:: PACKET_HEAD_LEGNTH)
         {
-           if( mListener->onRecv(endpoint) < 0)
-           {
+            printf("IOEvent::onRecv recv from tcp ip=%s port=%d id=%d.\n",endpoint->getHostIP(), endpoint->getHostPort(), packet->getPacketID());
+           
+            if(mListener!= NULL && packet !=NULL)
+            {
+                mListener->onRecv(endpoint, packet);
+            }
+        }
+        else
+        {
+            delete packet;
+            packet = NULL;
+
+            if(result < 0)
+            {
                onDisconnect(fd);
-           }
+            }
         }
     }
 }
@@ -136,16 +182,44 @@ void IOEvent::onRecv(const int fd)
 void IOEvent::onSend(const int fd)
 {
     EndPoint* endpoint = getEndPoint(fd);
-    if(endpoint != NULL)
+
+    if(endpoint == NULL)
     {
-        if(mListener!=NULL)
-        {
-           if( mListener->onSend(endpoint) < 0)
-           {
-               onDisconnect(fd);
-           }
-        }
+        return;
     }
+
+    auto it = mPackets.find(fd);
+
+    if(it == mPackets.end())
+    {
+        return;
+    }
+
+    bool success = true;
+
+    while(it->second.size()  > 0)
+    {
+        Packet* packet = it->second.front();
+        if(packet)
+        {
+            int result = endpoint->send(packet->data(), packet->length());
+
+            if(result < 0)
+            {
+                success = false;
+            }
+        }
+
+        it->second.pop();
+        delete packet;
+        packet = NULL;
+    }
+
+    if(success == false)
+    {
+        onDisconnect(fd);
+    }
+
 }
 
 void IOEvent::onError(const int fd)

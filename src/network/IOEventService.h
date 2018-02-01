@@ -7,15 +7,14 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "Client.h"
 #include "Packet.h"
 #include "EndPoint.h"
+#include "IOEventPoller.h"
 #include "../public.h"
 #include "../common/ThreadPool.h"
-#include "IOEventPoller.h"
 #include "../common/nocopyable.h"
 
-class IOEventService:public nocopyable 
+class IOEventService:public nocopyable, 
                      public IOEventListener
 {
     public:

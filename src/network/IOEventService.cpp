@@ -33,9 +33,9 @@ bool IOEventService:: initUdp(const unsigned int port)
         return false;
     }
 
-    ThreadPool::getMe()->addTask<IOEventService>(this, &IOEventService::onRecvfrom, NULL);
+    //ThreadPool::getMe()->addTask<IOEventService>(this, &IOEventService::onRecvfrom, NULL);
 
-    ThreadPool::getMe()->addTask<IOEventService>(this, &IOEventService::onSendto, NULL);
+    //ThreadPool::getMe()->addTask<IOEventService>(this, &IOEventService::onSendto, NULL);
 
     return true;
 }
@@ -73,7 +73,7 @@ void IOEventService::run()
         return;
     }
 
-    if(mTcpServer.IsValid())
+    if(mTcpServer.isValid())
     {
         mTcpServer.update();
     }
@@ -145,7 +145,7 @@ void IOEventService::onError(EndPoint* endpoint)
 
     printf("IOEventService::onError %s:%d\n",endpoint->getHostIP(), endpoint->getHostPort());
 }
-
+/*
 void IOEventService::onRecvfrom(void* arg)
 {
    while(true)
@@ -169,5 +169,5 @@ void IOEventService::onRecvfrom(void* arg)
 void IOEventService::onSendto(void* arg)
 {
 }
-
+*/
 

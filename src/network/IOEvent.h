@@ -2,8 +2,13 @@
 #define _IO_EVENT_H_
 
 #include "EndPoint.h"
+#include "Packet.h"
 #include <unordered_map>
+#include <queue>
 
+class EndPoint;
+class Packet;
+class IOEvent;
 
 class IOEventListener
 {
@@ -13,18 +18,23 @@ class IOEventListener
         IOEventListener(){}
         virtual ~IOEventListener() {}
 
+        void            send(EndPoint* endpoint, Packet* packet);
     private:
-        virtual void    onConnect(EndPoint* endpoint) = 0;
-        virtual int     onRecv(EndPoint* endpoint) = 0;
-        virtual int     onSend(EndPoint* endpoint) = 0;
-        virtual void    onDisconnect(EndPoint* endpoint) = 0;
-        virtual void    onError(EndPoint* endpoint) = 0;
+        void            init(IOEvent* event){mIOEvent = event;}
+
+        virtual void    onConnect(EndPoint*) = 0;
+        virtual void     onRecv(EndPoint* endpoint, Packet* packet) = 0;
+        virtual void    onDisconnect(EndPoint*) = 0;
+        virtual void    onError(EndPoint*) = 0;
         virtual void    onClose() = 0;
+
+    private:
+        IOEvent*        mIOEvent;
 };
 
 
-class EndPoint;
-typedef std::unordered_map<int, EndPoint*> EndPoints;
+typedef std::unordered_map<int, EndPoint*>              EndPoints;
+typedef std::unordered_map<int, std::queue<Packet*> >   Packets;
 
 class IOEvent
 {
@@ -40,9 +50,12 @@ class IOEvent
         virtual bool registerEndPoint(int fd,EndPoint* endpoint);
         virtual bool unRegisterEndPoint(int fd, EndPoint* endpoint);
         
-        EndPoint* getEndPoint(const int fd);
+        EndPoint*    getEndPoint(const int fd);
         
-        inline bool isValid(){return mServer.isValid();}
+        inline bool  isValid(){return mServer.isValid();}
+        
+        void         send(EndPoint* endpoint, Packet* packet);
+
      protected:
         void onAccept(const int fd);
         void onRecv(const int fd);
@@ -60,6 +73,7 @@ class IOEvent
 
         int                 mBackLog;
 
+        Packets             mPackets;
 };
 
 #endif

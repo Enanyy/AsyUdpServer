@@ -146,7 +146,7 @@ void AsycUdpServer::update()
 
 }
 
-void AsycUdpServer::sendUdp(MessageInfo* message)
+void AsycUdpServer::sendto(MessageInfo* message)
 {
     if(message == NULL)
     {
@@ -179,52 +179,9 @@ void AsycUdpServer::onConnect(EndPoint* endpoint )
 
 }
 
-int AsycUdpServer::onRecv(EndPoint* endpoint)
+void AsycUdpServer::onRecv(EndPoint* endpoint, Packet* packet)
 {
-    printf("AsycUdpServer:: onRecv\n");
 
-    if(endpoint == NULL)
-    {
-        return 0;
-    }
-
-    Packet* packet = new Packet();
-    printf("AsycUdpServer::onRecv %d Begin recv.\n", endpoint->getFD());
-    int result = packet->recv(endpoint);
-    printf("AsycUdpServer::onRecv %d End recv.\n", endpoint->getFD());
-    if(result >= Packet:: PACKET_HEAD_LEGNTH)
-    {
-        printf("AsycUdpServer::onRecv recv from tcp ip=%s port=%d id=%d.\n",endpoint->getHostIP(), endpoint->getHostPort(), packet->getPacketID());
-        Client* client = getClient(endpoint);
-
-        mReceiveMessageQueue.push(new MessageInfo(packet,client));
-    }
-    else
-    {
-        SAFE_DELETE(packet);
-    }
-    return result;
-}
-
-int AsycUdpServer::onSend(EndPoint* endpoint)
-{
-    printf("AsycUdpServer::onSend.\n");
-    if(endpoint == NULL)
-    {
-        printf("AsycUdpServer::onSend endpoint==NULL.\n");
-        return 0;
-    }
-
-    Client* client = getClient(endpoint);
-    if(client)
-    {
-        return client->sendTcp();
-    }
-    else
-    {
-        printf("AsycUdpServer::onSend client == NULL.\n");
-    }
-    return 0;
 }
 
 void AsycUdpServer::onDisconnect(EndPoint* endpoint)

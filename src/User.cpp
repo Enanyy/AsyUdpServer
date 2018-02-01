@@ -12,39 +12,39 @@ User:: ~User()
 
 }
 
-void User::sendUdp(Packet* packet)
+void User::sendto(Packet* packet)
 {
     if(mClient)
     {
-        mClient->sendUdp(packet);
+        mClient->send(packet);
     }
 }
 
-void User::sendTcp(Packet* packet)
+void User::send(Packet* packet)
 {
     if(mClient)
     {
-        mClient->sendTcp(packet);
+        mClient->send(packet);
     }
 }
 
-void User::sendTcp(MessageID messageId, const char*data, const size_t length)
+void User::send(MessageID messageId, const char*data, const size_t length)
 {
     if(data != NULL)
     {
         printf("User::sendTcp %d cache tcp id = %d.\n",getUserID(), (int)messageId);
         Packet* packet = new Packet((int)messageId, const_cast<char*>(data), length);
-        sendTcp(packet);
+        send(packet);
     }
 }
 
-void User::sendUdp(MessageID messageId, const char* data, const size_t length)
+void User::sendto(MessageID messageId, const char* data, const size_t length)
 {
     if(data != NULL)
     {
         printf("User::sendUdp %d cache udp id = %d.\n",getUserID(), (int)messageId);
         Packet* packet = new Packet((int)messageId, const_cast<char*>(data), length);
-        sendUdp(packet);
+        sendto(packet);
     }
 }
 

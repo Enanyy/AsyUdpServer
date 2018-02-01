@@ -32,7 +32,7 @@ class AsycUdpServer: public IOEventListener
 
         void update();
 
-        void sendUdp(MessageInfo* message);
+        void sendto(MessageInfo* message);
 
         void clientDisconnect(Client * client);
 
@@ -53,8 +53,7 @@ class AsycUdpServer: public IOEventListener
 
         //EpollListener
         virtual void    onConnect(EndPoint* endpoint); 
-        virtual int     onRecv(EndPoint* endpoint);
-        virtual int     onSend(EndPoint* endpoint);
+        virtual void    onRecv(EndPoint* endpoint, Packet* packet);
         virtual void    onDisconnect(EndPoint* endpoint);
         virtual void    onClose();
         virtual void    onError(EndPoint* endpoint);
