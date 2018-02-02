@@ -3,13 +3,13 @@
 
 #include <map>
 
-#include "AsycUdpServer.h"
 #include "User.h"
 #include "ModuleManager.h"
+#include "network/IOEventService.h"
 
 class User;
 class ModuleManager;
-class FrameServer
+class FrameServer: public IOEventHandler
 {
     public:
         static const int TCP_PORT = 1255;
@@ -18,36 +18,21 @@ class FrameServer
         FrameServer();
         ~FrameServer();
 
-        void start();
-
-        void close();
-
-        void run();
-
-        void update();
-
         User* getUser(const int userid);
-        User* getUser(Client* client);
 
     private:
-        void onStart(void* param);
-        void onConnect(void* param);
-        void onMessage(void* parma);
-        void onDisconnect(void* param);
+        virtual void onStart();
+        virtual void onConnect(EndPoint* endpoint);
+        virtual void onMessage(Message* message);
+        virtual void onDisconnect(EndPoint* endpoint);
+        virtual void update();
 
-        void sendFrame();
-
-        static void* sendFrameThread(void* param);
 
     private:
         
-        unsigned long mGameFrameCount;
 
         std::vector<User*> mUserList;
 
-        AsycUdpServer mServer;
-
-        pthread_t mFrameThread;
 };
 
 #endif

@@ -46,6 +46,9 @@ $(CC_OBJ_LIST):%.o:%.c
 run:
 	$(TARGET)
 
+gdb:
+	@gdb $(TARGET)
+
 clean:
 	@rm -f $(wildcard $(OBJ_DIR)/*.o)
 	@rm -f $(TARGET)

@@ -18,12 +18,15 @@ class IOEventListener
         IOEventListener(){}
         virtual ~IOEventListener() {}
 
+        EndPoint*       getEndPoint(int fd);
+        EndPoint*       getEndPoint(unsigned long ip, unsigned int port);
+
         void            send(EndPoint* endpoint, Packet* packet);
     private:
         void            init(IOEvent* event){mIOEvent = event;}
 
         virtual void    onConnect(EndPoint*) = 0;
-        virtual void     onRecv(EndPoint* endpoint, Packet* packet) = 0;
+        virtual void    onRecv(EndPoint* endpoint, Packet* packet) = 0;
         virtual void    onDisconnect(EndPoint*) = 0;
         virtual void    onError(EndPoint*) = 0;
         virtual void    onClose() = 0;
@@ -51,6 +54,7 @@ class IOEvent
         virtual bool unRegisterEndPoint(int fd, EndPoint* endpoint);
         
         EndPoint*    getEndPoint(const int fd);
+        EndPoint*    getEndPoint(unsigned long ip, unsigned int port);
         
         inline bool  isValid(){return mServer.isValid();}
         

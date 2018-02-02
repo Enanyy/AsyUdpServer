@@ -1,13 +1,52 @@
 #include "IOEventService.h"
 
-IOEventService:: IOEventService():mInited(false),mTcpServer(),mUdpServer()
+void IOEventHandler::send(EndPoint* endpoint, Packet* packet)
+{
+    if(mService)
+    {
+        mService->send(endpoint, packet);
+    }
+}
+
+void IOEventHandler::sendto(EndPoint* endpoint, Packet* packet)
+{
+    if(mService)
+    {
+        mService->sendto(endpoint,packet);
+    }
+}
+
+IOEventService:: IOEventService():mEventHandler(NULL),
+                                  mInited(false),
+                                  mTcpServer(),
+                                  mUdpServer(),
+                                  mMessageQueue(),
+                                  mSendToQueue(),
+                                  mConnectQueue(),
+                                  mDisconnectQueue()
 {
     
 }
 
 IOEventService::~IOEventService()
 {
+    mEventHandler = NULL;
     close();
+}
+
+bool IOEventService::init(IOEventHandler* handler)
+{
+    mEventHandler = handler;
+    
+    if(mEventHandler == NULL)
+    {
+        return false;
+    }
+
+    mEventHandler->init(this);
+
+    return true;
+
 }
 
 bool IOEventService:: initTcp(const char* ip, const unsigned int port)
@@ -33,9 +72,9 @@ bool IOEventService:: initUdp(const unsigned int port)
         return false;
     }
 
-    //ThreadPool::getMe()->addTask<IOEventService>(this, &IOEventService::onRecvfrom, NULL);
+//    ThreadPool::getMe()->addTask<IOEventService>(this, &IOEventService::onRecvfrom, NULL);
 
-    //ThreadPool::getMe()->addTask<IOEventService>(this, &IOEventService::onSendto, NULL);
+//    ThreadPool::getMe()->addTask<IOEventService>(this, &IOEventService::onSendto, NULL);
 
     return true;
 }
@@ -58,6 +97,13 @@ void IOEventService::start(const char* ip, const int tcpport, const int udpport)
     }
 
     printf("initUdp success.\n");
+
+    if(mEventHandler)
+    {
+        mEventHandler->onStart();
+    }
+
+    mInited = true;
 }
 
 void IOEventService::close()
@@ -73,12 +119,68 @@ void IOEventService::run()
         return;
     }
 
-    if(mTcpServer.isValid())
+    if(mEventHandler == NULL)
     {
-        mTcpServer.update();
+        return ;
     }
 
+    while(true)
+    {
 
+        if(mTcpServer.isValid())
+        {
+            mTcpServer.update();
+        }
+
+        if(mEventHandler)
+        {
+            mEventHandler->update();
+        }
+
+        while(mConnectQueue.size() > 0)
+        {
+            
+            EndPoint* endpoint = mConnectQueue.front();
+
+            if(mEventHandler)
+            {
+                mEventHandler->onConnect(endpoint);
+            }
+            mConnectQueue.pop();
+
+        }
+
+        
+        while(mMessageQueue.size() > 0)
+        {
+            Message* message = mMessageQueue.front();
+            if(mEventHandler)
+            {
+                mEventHandler->onMessage(message);
+            }
+            mMessageQueue.pop();
+
+            SAFE_DELETE(message);
+        }
+
+        while(mDisconnectQueue.size() > 0)
+        {
+            EndPoint* endpoint = mDisconnectQueue.front();
+            if(mEventHandler)
+            {
+                mEventHandler->onDisconnect(endpoint);
+            }
+            SAFE_DELETE(endpoint);
+        }
+    }
+}
+
+void IOEventService::sendto(EndPoint* endpoint, Packet* packet)
+{
+    if(endpoint && packet)
+    {
+        mSendToQueue.push(new Message(endpoint, packet));
+    }
 }
 
 void IOEventService::onConnect(EndPoint* endpoint )
@@ -90,38 +192,22 @@ void IOEventService::onConnect(EndPoint* endpoint )
 
     printf("IOEventService::onConnect fd=%d ip=%s port=%d.\n",endpoint->getFD(), endpoint->getHostIP(), endpoint->getHostPort() );
     
-
-
+    mConnectQueue.push(endpoint);
 }
 
-int IOEventService::onRecv(EndPoint* endpoint)
+void IOEventService::onRecv(EndPoint* endpoint, Packet* packet)
 {
     printf("IOEventService:: onRecv\n");
 
-    if(endpoint == NULL)
+    if(endpoint == NULL || packet == NULL)
     {
-        return 0;
+        return ;
     }
 
-    Packet* packet = new Packet();
-    printf("IOEventService::onRecv %d Begin recv.\n", endpoint->getFD());
-    int result = packet->recv(endpoint);
-    printf("IOEventService::onRecv %d End recv.\n", endpoint->getFD());
-    if(result >= Packet:: PACKET_HEAD_LEGNTH)
-    {
-        printf("IOEventService::onRecv recv from tcp ip=%s port=%d id=%d.\n",endpoint->getHostIP(), endpoint->getHostPort(), packet->getPacketID());
-
-    }
-    else
-    {
-        SAFE_DELETE(packet);
-    }
-    return result;
+    printf("IOEventService::onRecv recv from tcp ip=%s port=%d id=%d.\n",endpoint->getHostIP(), endpoint->getHostPort(), packet->getPacketID());
+    mMessageQueue.push(new Message(endpoint,packet));
 }
 
-int IOEventService::onSend(EndPoint* endpoint)
-{
-}
 
 void IOEventService::onDisconnect(EndPoint* endpoint)
 {
@@ -130,10 +216,13 @@ void IOEventService::onDisconnect(EndPoint* endpoint)
         return ;
     }
 
+    mDisconnectQueue.push(endpoint);
+
 }
 
 void IOEventService::onClose()
 {
+    
 }
 
 void IOEventService::onError(EndPoint* endpoint)
@@ -145,7 +234,7 @@ void IOEventService::onError(EndPoint* endpoint)
 
     printf("IOEventService::onError %s:%d\n",endpoint->getHostIP(), endpoint->getHostPort());
 }
-/*
+
 void IOEventService::onRecvfrom(void* arg)
 {
    while(true)
@@ -157,7 +246,10 @@ void IOEventService::onRecvfrom(void* arg)
         {
 
             printf("IOEventService::onRecvfrom recv from udp ip=%s port=%d id=%d.\n",inet_ntoa(from.sin_addr), ntohs(from.sin_port), packet->getPacketID());
-            
+         
+            EndPoint* endpoint = getEndPoint(from.sin_addr.s_addr, from.sin_port);
+
+            mMessageQueue.push(new Message(endpoint, packet));
         }
         else
         {
@@ -169,5 +261,5 @@ void IOEventService::onRecvfrom(void* arg)
 void IOEventService::onSendto(void* arg)
 {
 }
-*/
+
 

@@ -1,9 +1,9 @@
 #include "User.h"
 
-User::User(int userId, Client* client)
+User::User(IOEventHandler* handler, EndPoint* endpoint)
 {
-    mUserID = userId;
-    mClient = client;
+    mEventHandler = handler;
+    mEndPoint = endpoint;
     mReady = false;
 }
 
@@ -14,17 +14,17 @@ User:: ~User()
 
 void User::sendto(Packet* packet)
 {
-    if(mClient)
+    if(mEventHandler)
     {
-        mClient->send(packet);
+       mEventHandler->sendto(mEndPoint, packet);
     }
 }
 
 void User::send(Packet* packet)
 {
-    if(mClient)
+    if(mEventHandler)
     {
-        mClient->send(packet);
+        mEventHandler->send(mEndPoint, packet);
     }
 }
 
@@ -48,11 +48,11 @@ void User::sendto(MessageID messageId, const char* data, const size_t length)
     }
 }
 
-int User::getClientID()
+int User::getUserID()
 {
-    if(mClient)
+    if(mEndPoint)
     {
-        return mClient->getEndPoint()->getFD();
+        return mEndPoint->getFD();
     }
     return -1;
 }

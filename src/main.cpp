@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "AsycUdpServer.h"
 #include "FrameServer.h"
 #include "public.h"
 #include "ModuleManager.h"
 #include "common/ThreadPool.h"
+#include "network/IOEventService.h"
 
 using namespace std;
 
@@ -28,9 +28,12 @@ int main(int argc, char* argv[])
 
     FrameServer frameserver;
 
-    frameserver.start();
+     IOEventService service;
+     service.init(&frameserver);
+    service.start("127.0.0.1",1255, 1337);
+    service.run();
 
-    frameserver.run();
+    ThreadPool::getMe()->destroy();
 
     return 0;
 }

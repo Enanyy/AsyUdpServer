@@ -8,6 +8,24 @@ void IOEventListener::send(EndPoint* endpoint, Packet* packet)
     }
 }
 
+EndPoint* IOEventListener::getEndPoint(int fd)
+{
+    if(mIOEvent)
+    {
+        return mIOEvent->getEndPoint(fd);
+    }
+    return NULL;
+}
+
+EndPoint* IOEventListener::getEndPoint(unsigned long ip, unsigned int port)
+{
+    if(mIOEvent)
+    {
+        return mIOEvent->getEndPoint(ip, port);
+    }
+    return  NULL;
+}
+
 
 IOEvent:: IOEvent():mServer(),mListener(NULL),mEndPoints() ,mBackLog(10), mPackets()
 {
@@ -128,6 +146,20 @@ EndPoint* IOEvent::getEndPoint(const int fd)
     {
         return it->second;
     }
+    return NULL;
+}
+
+
+EndPoint* IOEvent::getEndPoint(unsigned long ip, unsigned int port)
+{
+    for(auto it = mEndPoints.begin(); it != mEndPoints.end(); ++it)
+    {
+        if(it->second->getIP() == ip && it->second->getPort() == port)
+        {
+            return it->second;
+        }
+    }
+
     return NULL;
 }
 
