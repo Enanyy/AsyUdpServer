@@ -242,7 +242,7 @@ void IOEventService::onRecvfrom(void* arg)
         Packet* packet = new Packet();
         sockaddr_in from;
         int length = packet->recvfrom(&mUdpServer, from);
-        if(length >= Packet::PACKET_HEAD_LEGNTH)
+        if(length >= Packet::PACKET_HEAD_LENGTH)
         {
 
             printf("IOEventService::onRecvfrom recv from udp ip=%s port=%d id=%d.\n",inet_ntoa(from.sin_addr), ntohs(from.sin_port), packet->getPacketID());

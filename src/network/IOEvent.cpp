@@ -189,7 +189,7 @@ void IOEvent::onRecv(const int fd)
         printf("IOEvent::onRecv %d Begin recv.\n", endpoint->getFD());
         int result = packet->recv(endpoint);
         printf("IOEvent::onRecv %d End recv.\n", endpoint->getFD());
-        if(result >= Packet:: PACKET_HEAD_LEGNTH)
+        if(result >= Packet:: PACKET_HEAD_LENGTH)
         {
             printf("IOEvent::onRecv recv from tcp ip=%s port=%d id=%d.\n",endpoint->getHostIP(), endpoint->getHostPort(), packet->getPacketID());
            

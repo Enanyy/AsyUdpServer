@@ -1,45 +1,57 @@
-PROTO_LIB_PATH = /usr/lib/
-PROTO_CPP_PATH = ../src/protocpp/
+ROOT_DIR = $(shell pwd)
+PROTO_LIB_DIR = /usr/lib/
+PROTO_CPP_DIR = $(ROOT_DIR)/protocpp/
 
-CXX 	:= g++
-LD 		:= g++
+
+CXX 		:= g++
 CC 		:= gcc
 
-CFLAGS  := -g -W -c -Wall -lpthread -std=c++11  
-LDFLAGS := -lpthread -std=c++11
-PROTOFLAGS := -I $(PROTO_CPP_PATH) -L $(PROTO_LIB_PATH) -lprotoc -lprotobuf
+CFLAGS  	:= -g -W -c -Wall -lpthread -std=c++11  
+LFLAGS 		:= -lpthread -std=c++11
+PROTOFLAGS 	:= -I $(PROTO_CPP_DIR) -L $(PROTO_LIB_DIR) -lprotoc -lprotobuf
 
+SUB_DIR = $(shell ls -l | grep ^d | awk '{if($$9 != "bin") print $$9}')
 
-VPATH = $(PROTO_CPP_PATH)\
+OBJ_DIR = $(ROOT_DIR)/bin/debug/obj
+TARGET  = $(ROOT_DIR)/bin/debug/client
 
+$(shell mkdir -p $(OBJ_DIR))
 
-#INCLUDES = $(PROTO_CPP_PATH)Makefile.mk\
-		   
+export CXX CC CFLAGS PROTOFLAGS OBJ_DIR
 
-include $(INCLUDES)	
+CPP_LIST = $(wildcard *.cpp)
+CPP_OBJ_LIST = $(patsubst %.cpp, %.o, $(CPP_LIST))
 
-OBJECTS = main.o\
-		  ../net/MessageBuffer.o\
+CC_LIST = $(wildcard *.c)
+CC_OBJ_LIST = $(patsubst %.c, %.o, $(CC_LIST))
 
-TARGET = client
+all:$(SUB_DIR)\
+	$(CPP_OBJ_LIST)\
+	$(CC_OBJ_LIST)\
+	$(TARGET)
 
-all:$(TARGET)
+$(SUB_DIR):ECHO
+	make -C $@
 
-$(TARGET):$(OBJECTS) $(PROTOCPPOBJECTS)
-	$(CXX) $^ -o $@ $(LDFLAGS) $(PROTOFLAGS)
-	rm -f $(OBJECTS) $(PROTOCPPOBJECTS)
+$(TARGET):$(wildcard $(OBJ_DIR)/*.o)
+	$(CXX) $^ $(LFLAGS) $(PROTOFLAGS) -o $@
 
-$(OBJECTS):%.o:%.cpp
-	$(CXX) $(CFLAGS)  -o $@ $< 
+ECHO:
+	@echo $(SUB_DIR)
 
-$(PROTOCPPOBJECTS):%.o:%.cc
-	$(CXX) $(CFLAGS) $(PROTOFLAGS) -o $@ $<
+$(CPP_OBJ_LIST):%.o:%.cpp
+	$(CXX) $(CFLAGS) $^ -o $(OBJ_DIR)/$@
 
+$(CC_OBJ_LIST):%.o:%.c
+	$(CC) $(CFLAGS) $^ -o $(OBJ_DIR)/$@
 
 run:
-	./$(TARGET) 127.0.0.1 1255 1337
+	$(TARGET)
 
-.PHONY:clean blackup startredis
+gdb:
+	@gdb $(TARGET)
+
 clean:
-	rm -f $(OBJECTS)  $(TARGET) 
+	@rm -f $(wildcard $(OBJ_DIR)/*.o)
+	@rm -f $(TARGET)
 

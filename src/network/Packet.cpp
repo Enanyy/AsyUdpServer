@@ -1,6 +1,6 @@
 #include "Packet.h"
 
-Packet::Packet():MemoryStream(PACKET_HEAD_LEGNTH)
+Packet::Packet():MemoryStream(PACKET_HEAD_LENGTH)
 {
 
 }
@@ -19,7 +19,7 @@ Packet::Packet(char* data, unsigned int length):MemoryStream(length)
 
 Packet::Packet(int id, char* body, unsigned int bodylength)
 {
-    mlength = (size_t)(PACKET_HEAD_LEGNTH + bodylength);
+    mlength = (size_t)(PACKET_HEAD_LENGTH + bodylength);
     clear();
 
     resize(mlength);
@@ -78,25 +78,25 @@ int Packet::recv(EndPoint* endpoint)
         return 0;
     }
 
-    if(size() < PACKET_HEAD_LEGNTH)
+    if(size() < PACKET_HEAD_LENGTH)
     {
-        resize(PACKET_HEAD_LEGNTH);
+        resize(PACKET_HEAD_LENGTH);
     }
 
-    mlength = endpoint->recv(data(), PACKET_HEAD_LEGNTH);
+    mlength = endpoint->recv(data(), PACKET_HEAD_LENGTH);
     
-    if(mlength == PACKET_HEAD_LEGNTH)
+    if(mlength == PACKET_HEAD_LENGTH)
     {
         int bodylength = read<int>(PACKET_BODY_LENGTH_OFFSET);
         if(bodylength > 0)
         {
-            int packetlength = PACKET_HEAD_LEGNTH + bodylength;
+            int packetlength = PACKET_HEAD_LENGTH + bodylength;
             if(packetlength > size())
             {
                 resize(packetlength);
             }
 
-            int recvbodylength = endpoint->recv(data() + PACKET_HEAD_LEGNTH, bodylength);
+            int recvbodylength = endpoint->recv(data() + PACKET_HEAD_LENGTH, bodylength);
             if(recvbodylength > 0)
             {
                 mlength += recvbodylength;

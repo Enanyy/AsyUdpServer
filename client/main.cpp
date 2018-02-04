@@ -12,23 +12,23 @@
 #include <pthread.h>
 //#include <queue>
 
-#include "../net/MessageBuffer.h"
-#include "../MessageID.h"
-#include "../protocpp/scene.pb.h"
-#include "../protocpp/action.pb.h"
-#include "../public.h"
-#include "../common/SafeQueue.h"
+#include "../src/network/Packet.h"
+#include "../src/MessageID.h"
+#include "../src/protocpp/scene.pb.h"
+#include "../src/protocpp/action.pb.h"
+#include "../src/public.h"
+#include "../src/common/SafeQueue.h"
 
 void* sendTcp(void*);
 void* recvTcp(void*);
 void* sendUdp(void*);
 void* recvUdp(void*);
 void* input(void*);
-void onMessage(MessageBuffer* message);
+void onMessage(Packet* message);
 
-SafeQueue<MessageBuffer*> sendTcpQueue;
-SafeQueue<MessageBuffer*> sendUdpQueue;
-SafeQueue<MessageBuffer*> recvMessageQueue;
+SafeQueue<Packet*> sendTcpQueue;
+SafeQueue<Packet*> sendUdpQueue;
+SafeQueue<Packet*> recvMessageQueue;
 
 pthread_t sendTcpThread;
 pthread_t recvTcpThread;
@@ -50,8 +50,8 @@ const bool DEBUG_RUNNIG = false;
     std::string buffer;\
     send.SerializeToString(&buffer);\
     printf("buffer length:%d\n", strlen(buffer.c_str()));\
-    MessageBuffer* message = new MessageBuffer((size_t)messageId, buffer.c_str(), strlen(buffer.c_str()));\
-    printf("id=%d, time=%d,length =%d\n", message->getMessageID(), message->getMessageTimeStamp(), message->getLength());\
+    Packet* message = new Packet((int)messageId, (char*)buffer.c_str(), strlen(buffer.c_str()));\
+    printf("id=%d, time=%d,length =%d\n", message->getPacketID(), message->getPacketTimeStamp(), message->getPacketBodyLength());\
     sendTcpQueue.push(message);\
 
 int main(int argc, char** argv)
@@ -144,10 +144,10 @@ int main(int argc, char** argv)
         //printf("recvMessageQueue.size() = %d\n",recvMessageQueue.size());
         while(recvMessageQueue.size() > 0)
         {
-            MessageBuffer* message = recvMessageQueue.front();
+            Packet* message = recvMessageQueue.front();
             if(message)
             {
-                printf("recv message:%d\n",message->getLength());
+                printf("recv message:%d\n",message->length());
                 onMessage(message);
             }
             recvMessageQueue.pop();
@@ -187,11 +187,11 @@ void* sendTcp(void* arg)
 
         while(sendTcpQueue.size() > 0)
         {
-            MessageBuffer *message = sendTcpQueue.front();
+            Packet *message = sendTcpQueue.front();
             if(message)
             {
-                char* buffer = message->getBuffer();
-                int length = message->getLength();
+                char* buffer = message->data();
+                int length = message->length();
                 while(length > 0)
                 {
                     int ret = ::send(tcpSock, buffer, length, 0);
@@ -204,7 +204,7 @@ void* sendTcp(void* arg)
 
                 }
 
-                printf("send tcp messageId:%d, messagelength:%d senddlength:%d\n",(int)message->getMessageID(), message->getLength(), message->getLength() - length);
+                printf("send tcp messageId:%d, messagelength:%d senddlength:%d\n",(int)message->getPacketID(), message->length(), message->length() - length);
             }
 
             sendTcpQueue.pop();
@@ -221,7 +221,7 @@ void* sendTcp(void* arg)
 void* recvTcp(void* arg)
 {
     printf("begin recvTcp\n");
-    char* head = new char[MessageBuffer:: MESSAGE_HEAD_LENGTH];
+    char* head = new char[Packet:: PACKET_HEAD_LENGTH];
     unsigned long milliseconds = 0;
     while(true)
     {
@@ -236,10 +236,10 @@ void* recvTcp(void* arg)
         }
         milliseconds += 10;
 
-        bzero(head, MessageBuffer:: MESSAGE_HEAD_LENGTH);
+        bzero(head, Packet:: PACKET_HEAD_LENGTH);
         
         char* buffer= head;
-        size_t needRecvSize = MessageBuffer:: MESSAGE_HEAD_LENGTH;
+        size_t needRecvSize = Packet:: PACKET_HEAD_LENGTH;
 
         int receive = 0;
 
@@ -255,21 +255,21 @@ void* recvTcp(void* arg)
             printf("tcp recv head length:%d.\n",receive);
         }
       
-        if(receive >= MessageBuffer:: MESSAGE_HEAD_LENGTH)
+        if(receive >= Packet:: PACKET_HEAD_LENGTH)
         {
 
             int bodyLength = 0;
-            memcpy(&bodyLength, head + MessageBuffer:: MESSAGE_BODY_LENGTH_OFFSET, 4);
+            memcpy(&bodyLength, head + Packet:: PACKET_BODY_LENGTH_OFFSET, 4);
 
             printf("tcp recv bodylength:%d\n", bodyLength);
 
             if(bodyLength > 0)
             {
-                MessageBuffer* message = new MessageBuffer(bodyLength);
+                Packet* message = new Packet(bodyLength);
                 needRecvSize = bodyLength;
 
                 receive = 0;
-                buffer = message->getBuffer();
+                buffer = message->data();
 
                 receive = ::recv(tcpSock, buffer, needRecvSize, 0);
                 if(receive < 0)
@@ -320,11 +320,11 @@ void* sendUdp(void* arg)
 
         while(sendUdpQueue.size() > 0)
         {
-            MessageBuffer* message = sendUdpQueue.front();
+            Packet* message = sendUdpQueue.front();
             if(message)
             {
-                int ret = ::sendto(udpSock, message->getBuffer(), message->getLength(), 0, (const struct sockaddr*)&udpSockAddr, sizeof(struct sockaddr_in));
-                printf("udp send message length:%d,%d\n",ret, message->getLength());
+                int ret = ::sendto(udpSock, message->data(), message->length(), 0, (const struct sockaddr*)&udpSockAddr, sizeof(struct sockaddr_in));
+                printf("udp send message length:%d,%d\n",ret, message->length());
             }
 
             SAFE_DELETE(message);
@@ -366,12 +366,12 @@ void* recvUdp(void* arg)
         {
             printf("udp recv length:%d\n",ret);
 
-            int bodyLength = ret - MessageBuffer:: MESSAGE_HEAD_LENGTH;
+            int bodyLength = ret - Packet:: PACKET_HEAD_LENGTH;
             if(bodyLength <0)bodyLength = 0;
 
-            MessageBuffer* message = new MessageBuffer(bodyLength);
+           Packet* message = new Packet(bodyLength);
 
-            memcpy(message->getBuffer(), tempbuffer, ret);
+            memcpy(message->data(), tempbuffer, ret);
             recvMessageQueue.push(message);
         }
 
@@ -380,16 +380,16 @@ void* recvUdp(void* arg)
     return NULL;
 }
 
-void onMessage(MessageBuffer* message)
+void onMessage(Packet* message)
 {
     if(message == NULL)return;
     
-    MessageID messageId = (MessageID)message->getMessageID();
+    MessageID messageId = (MessageID)message->getPacketID();
     switch(messageId)
     {
         case MessageID::GM_CONNECT_BC:
             {
-                RECV_MSG(msg,GM_Connect,message->getMessageBody());
+                RECV_MSG(msg,GM_Connect,message->getPacketBody());
 
                 printf("Recv:GM_CONNECT_BC,clientid=%d roleid = %d\n",msg.clientid(), msg.roleid());
 

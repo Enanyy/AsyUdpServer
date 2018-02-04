@@ -11,7 +11,7 @@ class Packet: public MemoryStream
         static const size_t PACKET_TIMESTAMP_OFFSET = 4;
         static const size_t PACKET_BODY_LENGTH_OFFSET = 8;
         static const size_t PACKET_BODY_OFFSET = 12;
-        static const size_t PACKET_HEAD_LEGNTH = 12;
+        static const size_t PACKET_HEAD_LENGTH = 12;
 
         static const size_t PACKET_SIZE = 64*1024;
     public:

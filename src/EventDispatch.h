@@ -93,7 +93,7 @@ class EventDispatch:public Singleton<EventDispatch>
 
         }
 
-        void onDispatch(const EventID eventId, void* data)
+        void dispatch(const EventID eventId, void* data)
         {
             auto it = mEventReceivers.find(eventId);
             if(it!= mEventReceivers.end())
